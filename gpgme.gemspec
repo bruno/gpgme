@@ -16,7 +16,8 @@ decryption, signing, signature verification and key management.}
 
   s.rubyforge_project = "ruby-gpgme"
 
-  s.add_development_dependency "mocha", "~> 0.9.12"
+  s.add_development_dependency "mocha",    "~> 0.9.12"
+  s.add_development_dependency "minitest", "~> 2.0.2"
 
   s.files         = `git ls-files`.split("\n")
   s.extensions    = ["extconf.rb"]

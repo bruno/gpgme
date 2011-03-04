@@ -6,6 +6,7 @@ PATH
 GEM
   remote: http://rubygems.org/
   specs:
+    minitest (2.0.2)
     mocha (0.9.12)
 
 PLATFORMS
@@ -13,4 +14,5 @@ PLATFORMS
 
 DEPENDENCIES
   gpgme!
+  minitest (~> 2.0.2)
   mocha (~> 0.9.12)
