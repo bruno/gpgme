@@ -1,0 +1,16 @@
+PATH
+  remote: .
+  specs:
+    gpgme (1.0.8)
+
+GEM
+  remote: http://rubygems.org/
+  specs:
+    mocha (0.9.12)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  gpgme!
+  mocha (~> 0.9.12)
