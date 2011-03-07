@@ -43,19 +43,19 @@ LIBRUBY_A = lib$(RUBY_SO_NAME)-static.a
 LIBRUBYARG_SHARED = -l$(RUBY_SO_NAME)
 LIBRUBYARG_STATIC = -l$(RUBY_SO_NAME)-static
 
-RUBY_EXTCONF_H = 
-CFLAGS   =  -fPIC -fno-strict-aliasing -g -g -O2  -fPIC $(cflags)  
+RUBY_EXTCONF_H =
+CFLAGS   =  -fPIC -fno-strict-aliasing -g -g -O2  -fPIC $(cflags)
 INCFLAGS = -I. -I. -I/usr/lib/ruby/1.8/x86_64-linux -I.
-DEFS     = 
-CPPFLAGS = -DHAVE_GPGME_OP_EXPORT_KEYS   
-CXXFLAGS = $(CFLAGS) 
+DEFS     =
+CPPFLAGS = -DHAVE_GPGME_OP_EXPORT_KEYS
+CXXFLAGS = $(CFLAGS)
 ldflags  = -L.  -rdynamic -Wl,-export-dynamic
-dldflags = 
-archflag = 
+dldflags =
+archflag =
 DLDFLAGS = $(ldflags) $(dldflags) $(archflag)
 LDSHARED = $(CC) -shared
 AR = ar
-EXEEXT = 
+EXEEXT =
 
 RUBY_INSTALL_NAME = ruby1.8
 RUBY_SO_NAME = ruby1.8
@@ -73,26 +73,26 @@ COPY = cp
 
 #### End of system configuration section. ####
 
-preload = 
+preload =
 
 libpath = . $(libdir)
 LIBPATH =  -L. -L$(libdir)
-DEFFILE = 
+DEFFILE =
 
 CLEANFILES = mkmf.log
-DISTCLEANFILES = 
+DISTCLEANFILES =
 
-extout = 
-extout_prefix = 
-target_prefix = 
-LOCAL_LIBS = 
+extout =
+extout_prefix =
+target_prefix =
+LOCAL_LIBS =
 LIBS = $(LIBRUBYARG_SHARED)  -lgpgme -lgpg-error -lpthread -lrt -ldl -lcrypt -lm   -lc
 SRCS = gpgme_n.c
 OBJS = gpgme_n.o
 TARGET = gpgme_n
 DLLIB = $(TARGET).so
-EXTSTATIC = 
-STATIC_LIB = 
+EXTSTATIC =
+STATIC_LIB =
 
 BINDIR        = $(bindir)
 RUBYCOMMONDIR = $(sitedir)$(target_prefix)

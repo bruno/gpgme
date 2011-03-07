@@ -45,7 +45,7 @@ signature of the plaintext from stdin as follows.
 
 The same example can be rewritten in the mid level API as follows.
 
- $ ruby -rgpgme -e <<End  
+ $ ruby -rgpgme -e <<End
  ctx = GPGME::Ctx.new
  plain = GPGME::Data.from_io($stdin)
  sig = GPGME::Data.from_io($stdout)
@@ -56,7 +56,7 @@ The same example can be rewritten in the mid level API as follows.
 
 The same example can be rewritten in the lowest level API as follows.
 
- $ ruby -rgpgme -e <<End  
+ $ ruby -rgpgme -e <<End
  ret = Array.new
  GPGME::gpgme_new(ret)
  ctx = ret.shift
@@ -102,7 +102,7 @@ require 'gpgme/constants'
 # <code>GPGME.decrypt</code> performs decryption.
 #
 # The arguments should be specified as follows.
-# 
+#
 # - GPGME.decrypt(<i>cipher</i>, <i>plain</i>, <i>options</i>)
 # - GPGME.decrypt(<i>cipher</i>, <i>options</i>) -> <i>plain</i>
 #
@@ -157,7 +157,7 @@ end
 # <code>GPGME.verify</code> verifies a signature.
 #
 # The arguments should be specified as follows.
-# 
+#
 # - GPGME.verify(<i>sig</i>, <i>signed_text</i>, <i>plain</i>, <i>options</i>)
 # - GPGME.verify(<i>sig</i>, <i>signed_text</i>, <i>options</i>) -> <i>plain</i>
 #
@@ -210,7 +210,7 @@ end
 # <code>GPGME.sign</code> creates a signature of the plaintext.
 #
 # The arguments should be specified as follows.
-# 
+#
 # - GPGME.sign(<i>plain</i>, <i>sig</i>, <i>options</i>)
 # - GPGME.sign(<i>plain</i>, <i>options</i>) -> <i>sig</i>
 #
@@ -264,7 +264,7 @@ end
 # <code>GPGME.clearsign</code> creates a cleartext signature of the plaintext.
 #
 # The arguments should be specified as follows.
-# 
+#
 # - GPGME.clearsign(<i>plain</i>, <i>sig</i>, <i>options</i>)
 # - GPGME.clearsign(<i>plain</i>, <i>options</i>) -> <i>sig</i>
 #
@@ -296,7 +296,7 @@ end
 # <code>GPGME.detach_sign</code> creates a detached signature of the plaintext.
 #
 # The arguments should be specified as follows.
-# 
+#
 # - GPGME.detach_sign(<i>plain</i>, <i>sig</i>, <i>options</i>)
 # - GPGME.detach_sign(<i>plain</i>, <i>options</i>) -> <i>sig</i>
 #
@@ -328,7 +328,7 @@ end
 # <code>GPGME.encrypt</code> performs encryption.
 #
 # The arguments should be specified as follows.
-# 
+#
 # - GPGME.encrypt(<i>recipients</i>, <i>plain</i>, <i>cipher</i>, <i>options</i>)
 # - GPGME.encrypt(<i>recipients</i>, <i>plain</i>, <i>options</i>) -> <i>cipher</i>
 #
@@ -399,7 +399,7 @@ end
 # <code>GPGME.list_keys</code> iterates over the key ring.
 #
 # The arguments should be specified as follows.
-# 
+#
 # - GPGME.list_keys(<i>pattern</i>, <i>secret_only</i>, <i>options</i>)
 #
 # All arguments are optional.  If the last argument is a Hash, options
@@ -418,7 +418,7 @@ def GPGME.list_keys(*args_options) # :yields: key
   pattern, secret_only = args
   check_version(options)
   GPGME::Ctx.new do |ctx|
-    if block_given?  
+    if block_given?
       ctx.each_key(pattern, secret_only || false) do |key|
         yield key
       end
@@ -434,7 +434,7 @@ end
 # <code>GPGME.export</code> extracts public keys from the key ring.
 #
 # The arguments should be specified as follows.
-# 
+#
 # - GPGME.export(<i>pattern</i>, <i>options</i>) -> <i>keydata</i>
 # - GPGME.export(<i>pattern</i>, <i>keydata</i>, <i>options</i>)
 #
@@ -472,7 +472,7 @@ end
 # <code>GPGME.import</code> adds the keys to the key ring.
 #
 # The arguments should be specified as follows.
-# 
+#
 # - GPGME.import(<i>keydata</i>, <i>options</i>)
 #
 # All arguments are optional.  If the last argument is a Hash, options
@@ -881,7 +881,7 @@ module GPGME
 
   class EngineInfo
     private_class_method :new
-    
+
     attr_reader :protocol, :file_name, :version, :req_version, :home_dir
     alias required_version req_version
   end
