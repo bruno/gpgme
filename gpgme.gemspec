@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
-require "gpgme"
+require "gpgme/version"
 
 Gem::Specification.new do |s|
   s.name        = "gpgme"
