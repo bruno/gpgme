@@ -12,7 +12,6 @@ require 'gpgme/misc'
 require 'gpgme/signature'
 require 'gpgme/sub_key'
 require 'gpgme/user_id'
-require 'gpgme/high_level'
 
 module GPGME
 
