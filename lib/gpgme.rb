@@ -48,7 +48,8 @@ module GPGME
   end
 
   class << self
-    # call-seq:
+    # Decrypts a previously encrypted element
+    #
     #   GPGME.decrypt(cipher, plain=nil, options=Hash.new){|signature| ...}
     #
     # <code>GPGME.decrypt</code> performs decryption.
@@ -103,7 +104,8 @@ module GPGME
       end
     end
 
-    # call-seq:
+    # Verifies a previously signed element
+    #
     #   GPGME.verify(sig, signed_text=nil, plain=nil, options=Hash.new){|signature| ...}
     #
     # <code>GPGME.verify</code> verifies a signature.
@@ -156,7 +158,8 @@ module GPGME
       end
     end
 
-    # call-seq:
+    # Signs an element
+    #
     #   GPGME.sign(plain, sig=nil, options=Hash.new)
     #
     # <code>GPGME.sign</code> creates a signature of the plaintext.
@@ -210,7 +213,8 @@ module GPGME
       end
     end
 
-    # call-seq:
+    # Clearsigns an element
+    #
     #   GPGME.clearsign(plain, sig=nil, options=Hash.new)
     #
     # <code>GPGME.clearsign</code> creates a cleartext signature of the plaintext.
@@ -242,7 +246,8 @@ module GPGME
       GPGME.sign(plain, *args)
     end
 
-    # call-seq:
+    # Creates a detached signature of an element
+    #
     #   GPGME.detach_sign(plain, sig=nil, options=Hash.new)
     #
     # <code>GPGME.detach_sign</code> creates a detached signature of the plaintext.
@@ -274,38 +279,55 @@ module GPGME
       GPGME.sign(plain, *args)
     end
 
-    # call-seq:
-    #   GPGME.encrypt(recipients, plain, cipher=nil, options=Hash.new)
+    ##
+    # Encrypts an element
     #
-    # <code>GPGME.encrypt</code> performs encryption.
+    #  GPGME.encrypt something
     #
-    # The arguments should be specified as follows.
+    # Will return a string with the encrypted result unless specified otherwise.
     #
-    # - GPGME.encrypt(<i>recipients</i>, <i>plain</i>, <i>cipher</i>, <i>options</i>)
-    # - GPGME.encrypt(<i>recipients</i>, <i>plain</i>, <i>options</i>) -> <i>cipher</i>
+    # Must have some key imported, look for {GPGME.import} to know how
+    # to import one, or the gpg documentation to know how to create one
     #
-    # All arguments except <i>recipients</i> and <i>plain</i> are
-    # optional.  <i>plain</i> is input and <i>cipher</i> is output.  If
-    # the last argument is a Hash, options will be read from it.
+    # @param plain
+    #  Must be something that can be converted into a {GPGME::Data} object, or
+    #  a GPGME::Data object itself.
+    # @param [Hash] options
+    #  The optional parameters are as follows:
+    #  * +:recipients+ for which recipient do you want to encrypt this file. It
+    #    will pick the first one available if none specified. Can be an array of
+    #    identifiers or just one (a string).
+    #  * +:always_trust+ if set to true specifies all the recipients to be
+    #    trusted, thus not requiring confirmation.
+    #  * +:sign+ if set to true, performs a combined sign and encrypt operation.
+    #  * +:signers+ if +:sign+ specified to true, a list of additional possible
+    #    signers. Must be an array of sign identifiers.
+    #  * +:output+ if specified, it will write the output into it. It will be
+    #    converted to a GPGME::Data object, so it could be a file for example.
     #
-    # The recipients are specified by an array whose elements are a string
-    # or a GPGME::Key object.  If <i>recipients</i> is <tt>nil</tt>, it
-    # performs symmetric encryption.
+    # @example returns string that can be later encrypted
+    #  GPGME.encrypt "Hello world!"
     #
-    # An input argument is specified by an IO like object (which responds
-    # to <code>read</code>), a string, or a GPGME::Data object.
+    # @example string that can be encrypted by someone@example.com.
+    #  GPGME.encrypt "Hello", :recipients => "someone@example.com"
     #
-    # An output argument is specified by an IO like object (which responds
-    # to <code>write</code>) or a GPGME::Data object.
+    # @example If I didn't trust any of my keys by default
+    #  GPGME.encrypt "Hello" # => GPGME::Error::General
+    #  GPGME.encrypt "Hello", :always_trust => true # => Will work fine
     #
-    # <i>options</i> are same as <code>GPGME::Ctx.new()</code> except for
+    # @example encrypted string that can be decrypted and/or *verified*
+    #  GPGME.encrypt "Hello", :sign => true
     #
-    # - <tt>:sign</tt> If <tt>true</tt>, it performs a combined sign and
-    #   encrypt operation.
-    # - <tt>:signers</tt> Signing keys.  If specified, it is an array
-    #   whose elements are a GPGME::Key object or a string.
-    # - <tt>:always_trust</tt> Setting this to <tt>true</tt> specifies all
-    #   the recipients should be trusted.
+    # @example multiple signers
+    #  GPGME.encrypt "Hello", :sign => true, :signers => "extra@example.com"
+    #
+    # @example writing to a file instead
+    #  file = File.new("signed.sec","wa")
+    #  GPGME.encrypt "Hello", :output => file # output written to signed.sec
+    #
+    # @raise [GPGME::Error::General] when trying to encrypt with a key that is
+    #   not trusted, and +:always_trust+ wasn't specified
+    #
     #
     def encrypt(recipients, plain, *args_options)
       raise ArgumentError, 'wrong number of arguments' if args_options.length > 3
@@ -345,7 +367,8 @@ module GPGME
       end
     end
 
-    # call-seq:
+    # Lists all the keys available
+    #
     #   GPGME.list_keys(pattern=nil, secret_only=false, options=Hash.new){|key| ...}
     #
     # <code>GPGME.list_keys</code> iterates over the key ring.
@@ -380,7 +403,8 @@ module GPGME
       end
     end
 
-    # call-seq:
+    # Exports a key
+    #
     #   GPGME.export(pattern)
     #
     # <code>GPGME.export</code> extracts public keys from the key ring.
@@ -418,7 +442,8 @@ module GPGME
       end
     end
 
-    # call-seq:
+    # Imports a key
+    #
     #   GPGME.import(keydata)
     #
     # <code>GPGME.import</code> adds the keys to the key ring.

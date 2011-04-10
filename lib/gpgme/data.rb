@@ -1,5 +1,6 @@
 module GPGME
   class Data
+
     BLOCK_SIZE = 4096
 
     # Create a new instance.
