@@ -14,10 +14,9 @@ Easy). GnuPG Made Easy (GPGME) is a library designed to make access to GnuPG
 easier for applications. It provides a High-Level Crypto API for encryption,
 decryption, signing, signature verification and key management.}
 
-  s.rubyforge_project = "ruby-gpgme"
-
   s.add_development_dependency "mocha",    "~> 0.9.12"
   s.add_development_dependency "minitest", "~> 2.0.2"
+  s.add_development_dependency "ruby-debug19"
 
   s.files         = `git ls-files`.split("\n")
   s.extensions    = ["extconf.rb"]
