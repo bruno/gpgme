@@ -1,5 +1,4 @@
-KEY_SHA = 'CDC1295F'
-PUBLIC_KEY = GPGME::Data.new <<-RUBY
+public_key = GPGME::Data.new <<-RUBY
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 Version: GnuPG v1.4.11 (Darwin)
 
@@ -26,7 +25,7 @@ q5rKJV/CoWO5r/0An2VymnaoG06pSnEPwXNoNlQiAsxJ
 -----END PGP PUBLIC KEY BLOCK-----
 RUBY
 
-PRIVATE_KEY = GPGME::Data.new <<-RUBY
+private_key = GPGME::Data.new <<-RUBY
 -----BEGIN PGP PRIVATE KEY BLOCK-----
 Version: GnuPG v1.4.11 (Darwin)
 
@@ -53,3 +52,30 @@ XzavAKCGDB+he5ZmN4q+B08rpfW34yvC2ACeKPbOzQ7rdprs8Jzras2epHTFkRk=
 =OCER
 -----END PGP PRIVATE KEY BLOCK-----
 RUBY
+
+encrypted_text = <<-RUBY
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v1.4.11 (Darwin)
+
+hQEOA7uYu2zDDDNhEAP9FVfz4qgCstLsTBpbiXtw5m0RBmkr9yNoUa2trmWnQiDo
++7FyA4rIeyV3tCt9mpkd7o92/AwxgOkjEEvmZdtGVggtKGoUsPjMDkD/wY7IYyB4
+08JXTz3pDOUj83Y1yJvk1xGMt8k7wwUvJ7Up90fC4bVrBaDGja9pwJXrcqzDe9MD
+/3/V4Lm06BLVT4LMGpLsVQGDL7xVOsq8aphD7RXbS2d2+wEJqCM38e07NiQYGLCM
+OPDRCudzZu7srXcS6GKbaY++WXjyxoiowG+ESuc5khNorX1XoBvHLCATLGjw4tuE
+97QBWforkc3k6WqwcgsNXpQvebadfvpiWchAbVX8wMpC0kYB4y70rqr+DRG0RsUY
+FyPyG/G1SiQWIp8dT5KZVC4bSnGswivznX+m9K2xd9J0fuBnixDU2U8KUX6FvfN8
+fj2kn5Dz3CwR
+=UoCj
+-----END PGP MESSAGE-----
+RUBY
+
+KEY = {
+  :sha => 'CDC1295F',
+  :public => public_key,
+  :private => private_key
+}
+
+TEXT = {
+  :plain => "Hi there",
+  :encrypted => encrypted_text.chomp
+}
