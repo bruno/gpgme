@@ -1,4 +1,9 @@
 module GPGME
+
+  ##
+  # A class whose purpose is to unify the way we work with the data (both
+  # input and output). Most of the calls expect instances of this class,
+  # or will try to create one from your parameters.
   class Data
 
     BLOCK_SIZE = 4096
