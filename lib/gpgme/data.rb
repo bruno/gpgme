@@ -29,7 +29,7 @@ module GPGME
       #   file = File.open("secure.pass")
       #   data = GPGME::Data.new(file.fileno) # file descriptor
       #
-      def new(object = nil, intend = nil)
+      def new(object = nil)
         if object.nil?
           empty!
         elsif object.is_a?(Data)
