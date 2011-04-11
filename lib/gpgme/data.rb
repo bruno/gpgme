@@ -6,11 +6,29 @@ module GPGME
     class << self
 
       ##
-      # We implement self.new instead of initialize because objects are actually
+      # We implement +self.new+ instead of initialize because objects are actually
       # instantiated through the C API with stuff like +gpgme_data_new+.
       #
-      # We try to create a Data smartly depending on the object passed, and if
-      # another GPGME::Data object is passed, it just returns it.
+      # We try to create a {GPGME::Data} smartly depending on the object passed, and if
+      # another {GPGME::Data} object is passed, it just returns it.
+      #
+      # @example empty
+      #   data = GPGME::Data.new
+      #   data.write("stuff")
+      #
+      # @example from a string
+      #   data = GPGME::Data.new("From a string")
+      #
+      # @example from a file
+      #   data = GPGME::Data.new(File.open("secure.pass"))
+      #
+      # @example from a file descriptor
+      #   data = GPGME::Data.new(0) # Standard input
+      #   data = GPGME::Data.new(1) # Standard output
+      #
+      #   file = File.open("secure.pass")
+      #   data = GPGME::Data.new(file.fileno) # file descriptor
+      #
       def new(object = nil, intend = nil)
         if object.nil?
           empty!
@@ -74,9 +92,9 @@ module GPGME
     # of file if <i>length</i> is omitted or is <tt>nil</tt>.
     def read(length = nil)
       if length
-	GPGME::gpgme_data_read(self, length)
+        GPGME::gpgme_data_read(self, length)
       else
-	buf = String.new
+        buf = String.new
         loop do
           s = GPGME::gpgme_data_read(self, BLOCK_SIZE)
           break unless s
@@ -86,24 +104,38 @@ module GPGME
       end
     end
 
-    # Seek to a given <i>offset</i> in the data object according to the
-    # value of <i>whence</i>.
+    ##
+    # Seek to a given +offset+ in the data object according to the
+    # value of +whence+.
+    #
+    # @example going to the beginning of the buffer after writing something
+    #  data = GPGME::Data.new("Some data")
+    #  data.read # => ""
+    #  data.seek(0)
+    #  data.read # => "Some data"
+    #
     def seek(offset, whence = IO::SEEK_SET)
       GPGME::gpgme_data_seek(self, offset, IO::SEEK_SET)
     end
 
-    # Write <i>length</i> bytes from <i>buffer</i> into the data object.
+    ##
+    # Writes +length+ bytes from +buffer+ into the data object.
+    # Writes the full buffer if no length passed.
     def write(buffer, length = buffer.length)
       GPGME::gpgme_data_write(self, buffer, length)
     end
 
+    ##
     # Return the encoding of the underlying data.
     def encoding
       GPGME::gpgme_data_get_encoding(self)
     end
 
-    # Set the encoding to a given <i>encoding</i> of the underlying
-    # data object.
+    ##
+    # Sets the encoding for this buffer. Accepts only values in one of the
+    # DATA_ENCODING_* constants.
+    #
+    # @raise [GPGME::Error::InvalidValue] if the value isn't accepted.
     def encoding=(encoding)
       err = GPGME::gpgme_data_set_encoding(self, encoding)
       exc = GPGME::error_to_exception(err)
