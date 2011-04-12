@@ -30,8 +30,10 @@ describe GPGME::Data do
 
     it "creates a data from file descriptor" do
       # magic filedescriptor
-      data = GPGME::Data.new(File.open(__FILE__).fileno)
-      assert_match /magic filedescriptor/, data.read
+      File.open(__FILE__) do |f|
+        data = GPGME::Data.new(f.fileno)
+        assert_match /magic filedescriptor/, data.read
+      end
     end
   end
 
