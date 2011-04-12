@@ -49,38 +49,58 @@ module GPGME
   end
 
   class << self
+
+    ##
     # Decrypts a previously encrypted element
     #
-    #   GPGME.decrypt(cipher, plain=nil, options=Hash.new){|signature| ...}
+    #   GPGME.decrypt cipher, options, &block
     #
-    # <code>GPGME.decrypt</code> performs decryption.
+    # Must have the appropiate key to be able to decrypt, of course. Returns
+    # a {GPGME::Data} object which can then be read.
     #
-    # The arguments should be specified as follows.
+    # @param cipher
+    #   Must be something that can be converted into a {GPGME::Data} object,
+    #   or a {GPGME::Data} object itself. It is the element that will be
+    #   decrypted.
     #
-    # - GPGME.decrypt(<i>cipher</i>, <i>plain</i>, <i>options</i>)
-    # - GPGME.decrypt(<i>cipher</i>, <i>options</i>) -> <i>plain</i>
+    # @param [Hash] options
+    #   The optional parameters:
+    #   * +:output+ if specified, it will write the output into it. It will
+    #     me converted to a {GPGME::Data} object, so it can also be a file,
+    #     for example.
     #
-    # All arguments except <i>cipher</i> are optional.  <i>cipher</i> is
-    # input, and <i>plain</i> is output.  If the last argument is a
-    # Hash, options will be read from it.
+    # @param &block
+    #   In the block all the signatures are yielded, so one could verify them.
+    #   See examples.
     #
-    # An input argument is specified by an IO like object (which responds
-    # to <code>read</code>), a string, or a GPGME::Data object.
+    # @return [GPGME::Data] a {GPGME::Data} that can be read.
     #
-    # An output argument is specified by an IO like object (which responds
-    # to <code>write</code>) or a GPGME::Data object.
+    # @example Simple decrypt
+    #   GPGME.decrypt encrypted_data
     #
-    # <i>options</i> are same as <code>GPGME::Ctx.new()</code>.
+    # @example Output to file
+    #   file = File.new("decrypted.txt")
+    #   GPGME.decrypt encrypted_data, :output => file
     #
-    def decrypt(cipher, *args_options)
-      raise ArgumentError, 'wrong number of arguments' if args_options.length > 2
-      args, options = split_args(args_options)
-      plain = args[0]
-
+    # @example Verifying signatures
+    #   GPGME.decrypt encrypted_data do |signature|
+    #     raise "Signature could not be verified" unless signature.valid?
+    #   end
+    #
+    # @raise [GPGME::Error::UnsupportedAlgorithm] when the cipher was encrypted
+    #   using an algorithm that's not supported currently.
+    #
+    # @raise [GPGME::Error::WrongKeyUsage] TODO Don't know when
+    #
+    # @raise [GPGME::Error::DecryptFailed] when the cipher was encrypted
+    #   for a key that's not available currently.
+    def decrypt(cipher, options = {})
       check_version(options)
+
+      plain_data   = Data.new(options[:output])
+      cipher_data  = Data.new(cipher)
+
       GPGME::Ctx.new(options) do |ctx|
-        cipher_data = Data.new(cipher)
-        plain_data = Data.new(plain)
         begin
           ctx.decrypt_verify(cipher_data, plain_data)
         rescue GPGME::Error::UnsupportedAlgorithm => exc
@@ -98,11 +118,10 @@ module GPGME
           end
         end
 
-        unless plain
-          plain_data.seek(0, IO::SEEK_SET)
-          plain_data.read
-        end
       end
+
+      plain_data.seek(0)
+      plain_data
     end
 
     # Verifies a previously signed element
@@ -289,14 +308,15 @@ module GPGME
     #
     #  GPGME.encrypt something
     #
-    # Will return a string with the encrypted result unless specified otherwise.
+    # Will return a {GPGME::Data} element which can then be read.
     #
     # Must have some key imported, look for {GPGME.import} to know how
     # to import one, or the gpg documentation to know how to create one
     #
     # @param plain
     #  Must be something that can be converted into a {GPGME::Data} object, or
-    #  a GPGME::Data object itself.
+    #  a {GPGME::Data} object itself.
+    #
     # @param [Hash] options
     #  The optional parameters are as follows:
     #  * +:recipients+ for which recipient do you want to encrypt this file. It
@@ -308,7 +328,7 @@ module GPGME
     #  * +:signers+ if +:sign+ specified to true, a list of additional possible
     #    signers. Must be an array of sign identifiers.
     #  * +:output+ if specified, it will write the output into it. It will be
-    #    converted to a GPGME::Data object, so it could be a file for example.
+    #    converted to a {GPGME::Data} object, so it could be a file for example.
     #
     # @return [GPGME::Data] a {GPGME::Data} object that can be read.
     #
@@ -339,14 +359,15 @@ module GPGME
     def encrypt(plain, options = {})
       check_version(options) # TODO what does it do?
 
-      GPGME::Ctx.new(options) do |ctx|
-        plain_data  = Data.new(plain)
-        cipher_data = Data.new(options[:output])
-        keys        = Key.find(:public, options[:recipients])
+      plain_data  = Data.new(plain)
+      cipher_data = Data.new(options[:output])
+      keys        = Key.find(:public, options[:recipients])
 
+      flags = 0
+      flags |= GPGME::ENCRYPT_ALWAYS_TRUST if options[:always_trust]
+
+      GPGME::Ctx.new(options) do |ctx|
         begin
-          flags = 0
-          flags |= GPGME::ENCRYPT_ALWAYS_TRUST if options[:always_trust]
           if options[:sign]
             if options[:signers]
               signers = Key.find(:secret, options[:signers], :sign)
@@ -363,10 +384,10 @@ module GPGME
           exc.keys = ctx.sign_result.invalid_signers
           raise exc
         end
-
-        cipher_data.seek(0)
-        cipher_data
       end
+
+      cipher_data.seek(0)
+      cipher_data
     end
 
     # Lists all the keys available
