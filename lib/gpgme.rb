@@ -197,7 +197,10 @@ module GPGME
 
       check_version(options)
       GPGME::Ctx.new(options) do |ctx|
-        ctx.add_signer(*resolve_keys(options[:signers], true, [:sign])) if options[:signers]
+        if options[:signers]
+          signers = Key.find(:secret, options[:signers], :sign)
+          ctx.add_signer(*signers)
+        end
         mode = options[:mode] || GPGME::SIG_MODE_NORMAL
         plain_data = Data.new(plain)
         sig_data = Data.new(sig)
@@ -339,14 +342,14 @@ module GPGME
       GPGME::Ctx.new(options) do |ctx|
         plain_data  = Data.new(plain)
         cipher_data = Data.new(options[:output])
-        keys        = GPGME::Key.find(:public, options[:recipients])
+        keys        = Key.find(:public, options[:recipients])
 
         begin
           flags = 0
           flags |= GPGME::ENCRYPT_ALWAYS_TRUST if options[:always_trust]
           if options[:sign]
             if options[:signers]
-              signers = GPGME::Key.find(:secret, options[:signers], :sign)
+              signers = Key.find(:secret, options[:signers], :sign)
               ctx.add_signer(*signers)
             end
             ctx.encrypt_sign(keys, plain_data, cipher_data, flags)
