@@ -133,28 +133,16 @@ module GPGME
       end
     end
 
+    ##
+    # TODO: DEPRECATED
     def input_data(input)
-      if input.kind_of? GPGME::Data
-        input
-      elsif input.respond_to? :to_str
-        GPGME::Data.from_str(input.to_str)
-      elsif input.respond_to? :read
-        GPGME::Data.from_callbacks(IOCallbacks.new(input))
-      else
-        raise ArgumentError, input.inspect
-      end
+      Data.new(input)
     end
 
+    ##
+    # TODO: DEPRECATED
     def output_data(output)
-      if output.kind_of? GPGME::Data
-        output
-      elsif output.respond_to? :write
-        GPGME::Data.from_callbacks(IOCallbacks.new(output))
-      elsif !output
-        GPGME::Data.empty
-      else
-        raise ArgumentError, output.inspect
-      end
+      Data.new(output)
     end
 
   end # Aux

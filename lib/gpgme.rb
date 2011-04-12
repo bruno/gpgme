@@ -7,11 +7,12 @@ require 'gpgme/ctx'
 require 'gpgme/data'
 require 'gpgme/error'
 require 'gpgme/io_callbacks'
+require 'gpgme/key_common'
 require 'gpgme/key'
+require 'gpgme/sub_key'
 require 'gpgme/key_sig'
 require 'gpgme/misc'
 require 'gpgme/signature'
-require 'gpgme/sub_key'
 require 'gpgme/user_id'
 
 module GPGME
@@ -137,7 +138,8 @@ module GPGME
       args, options = split_args(args_options)
       signed_text, plain = args
 
-      check_version(options)
+      check_version(options) # TODO no idea what it does
+
       GPGME::Ctx.new(options) do |ctx|
         sig_data = input_data(sig)
         if signed_text
@@ -305,10 +307,13 @@ module GPGME
     #  * +:output+ if specified, it will write the output into it. It will be
     #    converted to a GPGME::Data object, so it could be a file for example.
     #
-    # @example returns string that can be later encrypted
-    #  GPGME.encrypt "Hello world!"
+    # @return [GPGME::Data] a {GPGME::Data} object that can be read.
     #
-    # @example string that can be encrypted by someone@example.com.
+    # @example returns a {GPGME::Data} that can be later encrypted
+    #  encrypted = GPGME.encrypt "Hello world!"
+    #  encrypted.read # => Encrypted stuff
+    #
+    # @example to be decrypted by someone@example.com.
     #  GPGME.encrypt "Hello", :recipients => "someone@example.com"
     #
     # @example If I didn't trust any of my keys by default
@@ -328,29 +333,27 @@ module GPGME
     # @raise [GPGME::Error::General] when trying to encrypt with a key that is
     #   not trusted, and +:always_trust+ wasn't specified
     #
-    #
-    def encrypt(recipients, plain, *args_options)
-      raise ArgumentError, 'wrong number of arguments' if args_options.length > 3
-      args, options = split_args(args_options)
-      cipher = args[0]
-      recipient_keys = recipients ? resolve_keys(recipients, false, [:encrypt]) : nil
+    def encrypt(plain, options = {})
+      # recipient_keys = recipients ? resolve_keys(recipients, false, [:encrypt]) : nil
 
-      check_version(options)
+      check_version(options) # TODO what does it do?
+
       GPGME::Ctx.new(options) do |ctx|
-        plain_data = input_data(plain)
-        cipher_data = output_data(cipher)
+        plain_data  = GPGME::Data.new(plain)
+        cipher_data = GPGME::Data.new(options[:output])
+        keys        = GPGME::Key.find(:public, options[:recipients])
+
         begin
           flags = 0
-          if options[:always_trust]
-            flags |= GPGME::ENCRYPT_ALWAYS_TRUST
-          end
+          flags |= GPGME::ENCRYPT_ALWAYS_TRUST if options[:always_trust]
           if options[:sign]
             if options[:signers]
-              ctx.add_signer(*resolve_keys(options[:signers], true, [:sign]))
+              signers = GPGME::Key.find(:secret, options[:signers], :sign)
+              ctx.add_signer(*signers)
             end
-            ctx.encrypt_sign(recipient_keys, plain_data, cipher_data, flags)
+            ctx.encrypt_sign(keys, plain_data, cipher_data, flags)
           else
-            ctx.encrypt(recipient_keys, plain_data, cipher_data, flags)
+            ctx.encrypt(keys, plain_data, cipher_data, flags)
           end
         rescue GPGME::Error::UnusablePublicKey => exc
           exc.keys = ctx.encrypt_result.invalid_recipients
@@ -360,10 +363,8 @@ module GPGME
           raise exc
         end
 
-        unless cipher
-          cipher_data.seek(0, IO::SEEK_SET)
-          cipher_data.read
-        end
+        cipher_data.seek(0)
+        cipher_data
       end
     end
 
