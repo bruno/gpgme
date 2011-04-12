@@ -59,6 +59,10 @@ describe GPGME::Key do
   #   it "returns an array of possible capabilities"
   # end
 
+  # describe :secret? do
+  #   "returns true/false depending on the instance variable"
+  # end
+
   describe :usable_for? do
     it "checks for the capabilities of the key and returns true if it matches all" do
       key = GPGME::Key.find(:secret).first
@@ -80,10 +84,6 @@ describe GPGME::Key do
       refute key.usable_for?([:encrypt])
     end
   end
-
-  # describe :secret? do
-  #   "returns true/false depending on the instance variable"
-  # end
 
 end
 
