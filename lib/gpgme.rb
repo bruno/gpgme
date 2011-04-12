@@ -79,8 +79,8 @@ module GPGME
 
       check_version(options)
       GPGME::Ctx.new(options) do |ctx|
-        cipher_data = input_data(cipher)
-        plain_data = output_data(plain)
+        cipher_data = Data.new(cipher)
+        plain_data = Data.new(plain)
         begin
           ctx.decrypt_verify(cipher_data, plain_data)
         rescue GPGME::Error::UnsupportedAlgorithm => exc
@@ -141,13 +141,13 @@ module GPGME
       check_version(options) # TODO no idea what it does
 
       GPGME::Ctx.new(options) do |ctx|
-        sig_data = input_data(sig)
+        sig_data = Data.new(sig)
         if signed_text
-          signed_text_data = input_data(signed_text)
+          signed_text_data = Data.new(signed_text)
           plain_data = nil
         else
           signed_text_data = nil
-          plain_data = output_data(plain)
+          plain_data = Data.new(plain)
         end
         ctx.verify(sig_data, signed_text_data, plain_data)
         ctx.verify_result.signatures.each do |signature|
@@ -199,8 +199,8 @@ module GPGME
       GPGME::Ctx.new(options) do |ctx|
         ctx.add_signer(*resolve_keys(options[:signers], true, [:sign])) if options[:signers]
         mode = options[:mode] || GPGME::SIG_MODE_NORMAL
-        plain_data = input_data(plain)
-        sig_data = output_data(sig)
+        plain_data = Data.new(plain)
+        sig_data = Data.new(sig)
         begin
           ctx.sign(plain_data, sig_data, mode)
         rescue GPGME::Error::UnusableSecretKey => exc
@@ -334,13 +334,11 @@ module GPGME
     #   not trusted, and +:always_trust+ wasn't specified
     #
     def encrypt(plain, options = {})
-      # recipient_keys = recipients ? resolve_keys(recipients, false, [:encrypt]) : nil
-
       check_version(options) # TODO what does it do?
 
       GPGME::Ctx.new(options) do |ctx|
-        plain_data  = GPGME::Data.new(plain)
-        cipher_data = GPGME::Data.new(options[:output])
+        plain_data  = Data.new(plain)
+        cipher_data = Data.new(options[:output])
         keys        = GPGME::Key.find(:public, options[:recipients])
 
         begin
@@ -431,7 +429,7 @@ module GPGME
       raise ArgumentError, 'wrong number of arguments' if args_options.length > 2
       args, options = split_args(args_options)
       pattern, key = args[0]
-      key_data = output_data(key)
+      key_data = Data.new(key)
       check_version(options)
       GPGME::Ctx.new(options) do |ctx|
         ctx.export_keys(pattern, key_data)
@@ -467,7 +465,7 @@ module GPGME
       raise ArgumentError, 'wrong number of arguments' if args_options.length > 2
       args, options = split_args(args_options)
       key = args[0]
-      key_data = input_data(key)
+      key_data = Data.new(key)
       check_version(options)
       GPGME::Ctx.new(options) do |ctx|
         ctx.import_keys(key_data)

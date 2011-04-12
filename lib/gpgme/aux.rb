@@ -133,17 +133,5 @@ module GPGME
       end
     end
 
-    ##
-    # TODO: DEPRECATED
-    def input_data(input)
-      Data.new(input)
-    end
-
-    ##
-    # TODO: DEPRECATED
-    def output_data(output)
-      Data.new(output)
-    end
-
   end # Aux
 end # GPGME
