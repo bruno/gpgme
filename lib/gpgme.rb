@@ -394,6 +394,45 @@ module GPGME
       end
     end
 
+    # Exports a key
+    #
+    #   GPGME.export(pattern)
+    #
+    # <code>GPGME.export</code> extracts public keys from the key ring.
+    #
+    # The arguments should be specified as follows.
+    #
+    # - GPGME.export(<i>pattern</i>, <i>options</i>) -> <i>keydata</i>
+    # - GPGME.export(<i>pattern</i>, <i>keydata</i>, <i>options</i>)
+    #
+    # All arguments are optional.  If the last argument is a Hash, options
+    # will be read from it.
+    #
+    # <i>pattern</i> is a string or <tt>nil</tt>.  If <i>pattern</i> is
+    # <tt>nil</tt>, all available public keys are returned.
+    # <i>keydata</i> is output.
+    #
+    # An output argument is specified by an IO like object (which responds
+    # to <code>write</code>) or a GPGME::Data object.
+    #
+    # <i>options</i> are same as <code>GPGME::Ctx.new()</code>.
+    #
+    def export(*args_options)
+      raise ArgumentError, 'wrong number of arguments' if args_options.length > 2
+      args, options = split_args(args_options)
+      pattern, key = args[0]
+      key_data = Data.new(key)
+      check_version(options)
+      GPGME::Ctx.new(options) do |ctx|
+        ctx.export_keys(pattern, key_data)
+
+        unless key
+          key_data.seek(0, IO::SEEK_SET)
+          key_data.read
+        end
+      end
+    end
+
     # Imports a key
     #
     #   GPGME.import(keydata)
