@@ -358,42 +358,6 @@ module GPGME
       GPGME.sign text, options.merge(:mode => GPGME::SIG_MODE_DETACH)
     end
 
-    # Lists all the keys available
-    #
-    #   GPGME.list_keys(pattern=nil, secret_only=false, options=Hash.new){|key| ...}
-    #
-    # <code>GPGME.list_keys</code> iterates over the key ring.
-    #
-    # The arguments should be specified as follows.
-    #
-    # - GPGME.list_keys(<i>pattern</i>, <i>secret_only</i>, <i>options</i>)
-    #
-    # All arguments are optional.  If the last argument is a Hash, options
-    # will be read from it.
-    #
-    # <i>pattern</i> is a string or <tt>nil</tt>.  If <i>pattern</i> is
-    # <tt>nil</tt>, all available keys are returned.  If
-    # <i>secret_only</i> is <tt>true</tt>, the only secret keys are
-    # returned.
-    #
-    # <i>options</i> are same as <code>GPGME::Ctx.new()</code>.
-    #
-    def list_keys(*args_options) # :yields: key
-      raise ArgumentError, 'wrong number of arguments' if args_options.length > 3
-      args, options = split_args(args_options)
-      pattern, secret_only = args
-      check_version(options)
-      GPGME::Ctx.new do |ctx|
-        if block_given?
-          ctx.each_key(pattern, secret_only || false) do |key|
-            yield key
-          end
-        else
-          ctx.keys(pattern, secret_only || false)
-        end
-      end
-    end
-
     # Exports a key
     #
     #   GPGME.export(pattern)
