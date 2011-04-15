@@ -86,6 +86,19 @@ iHVABhk=
 -----END PGP MESSAGE-----
 RUBY
 
+unavailable = <<-RUBY
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v1.4.11 (Darwin)
+
+hIwDlCBoTwSpYjABA/9pn3d5xYasfQYquQzLwI0ASVuvuofjJZrYyKEYLEPHPaFn
+SJOMJRFJh4lC6UfGs7xktX0bONwsdGo0EaIP6H5W+WFW0W2VCxyqLLorCWa/XFi8
+Nr/2iVyj5s3QSfXGXDmnlRCf9PiAiBPPy2DzYgD3KLXMZH2hAxUtJmouuIgVWdJG
+AYKArJ8pJFbrtrIiPuNIjj0yhiNGx65GIfnF32fulpgzLbyWymlpkrzRRO6sz2wl
+EEdpZ6VKsLuoOb9Ou+hD6CLC3Izzmw==
+=bsMi
+-----END PGP MESSAGE-----
+RUBY
+
 KEY = {
   :sha => 'CDC1295F',
   :public => public_key,
@@ -95,5 +108,6 @@ KEY = {
 TEXT = {
   :plain => "Hi there",
   :encrypted => encrypted_text.chomp,
+  :unavailable => unavailable.chomp, # Created with a temporary key that's been removed.
   :signed => signed_text.chomp
 }

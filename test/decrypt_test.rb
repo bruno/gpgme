@@ -15,9 +15,12 @@ describe GPGME do
     end
 
     it "will get signature elements if the encrypted thing was signed" do
+      signatures = 0
       GPGME.decrypt(TEXT[:signed]) do |signature|
         assert_instance_of GPGME::Signature, signature
+        signatures += 1
       end
+      assert_equal 1, signatures
     end
 
     it "writes to the output if passed" do
@@ -30,16 +33,11 @@ describe GPGME do
     # it "raises UnsupportedAlgorithm"
     # it "raises WrongKeyUsage"
 
-    # TODO fails for some reason
-    # it "raises DecryptFailed when the decrypting key isn't available" do
-    #   remove_keys
-
-    #   assert_raises GPGME::Error::DecryptFailed do
-    #     GPGME.decrypt(TEXT[:encrypted])
-    #   end
-
-    #   import_keys
-    # end
+    it "raises DecryptFailed when the decrypting key isn't available" do
+      assert_raises GPGME::Error::DecryptFailed do
+        GPGME.decrypt(TEXT[:unavailable])
+      end
+    end
   end
 end
 
