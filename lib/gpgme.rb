@@ -51,6 +51,93 @@ module GPGME
   class << self
 
     ##
+    # Encrypts an element
+    #
+    #  GPGME.encrypt something
+    #
+    # Will return a {GPGME::Data} element which can then be read.
+    #
+    # Must have some key imported, look for {GPGME.import} to know how
+    # to import one, or the gpg documentation to know how to create one
+    #
+    # @param plain
+    #  Must be something that can be converted into a {GPGME::Data} object, or
+    #  a {GPGME::Data} object itself.
+    #
+    # @param [Hash] options
+    #  The optional parameters are as follows:
+    #  * +:recipients+ for which recipient do you want to encrypt this file. It
+    #    will pick the first one available if none specified. Can be an array of
+    #    identifiers or just one (a string).
+    #  * +:always_trust+ if set to true specifies all the recipients to be
+    #    trusted, thus not requiring confirmation.
+    #  * +:sign+ if set to true, performs a combined sign and encrypt operation.
+    #  * +:signers+ if +:sign+ specified to true, a list of additional possible
+    #    signers. Must be an array of sign identifiers.
+    #  * +:output+ if specified, it will write the output into it. It will be
+    #    converted to a {GPGME::Data} object, so it could be a file for example.
+    #
+    # @return [GPGME::Data] a {GPGME::Data} object that can be read.
+    #
+    # @example returns a {GPGME::Data} that can be later encrypted
+    #  encrypted = GPGME.encrypt "Hello world!"
+    #  encrypted.read # => Encrypted stuff
+    #
+    # @example to be decrypted by someone@example.com.
+    #  GPGME.encrypt "Hello", :recipients => "someone@example.com"
+    #
+    # @example If I didn't trust any of my keys by default
+    #  GPGME.encrypt "Hello" # => GPGME::Error::General
+    #  GPGME.encrypt "Hello", :always_trust => true # => Will work fine
+    #
+    # @example encrypted string that can be decrypted and/or *verified*
+    #  GPGME.encrypt "Hello", :sign => true
+    #
+    # @example multiple signers
+    #  GPGME.encrypt "Hello", :sign => true, :signers => "extra@example.com"
+    #
+    # @example writing to a file instead
+    #  file = File.new("signed.sec","wa")
+    #  GPGME.encrypt "Hello", :output => file # output written to signed.sec
+    #
+    # @raise [GPGME::Error::General] when trying to encrypt with a key that is
+    #   not trusted, and +:always_trust+ wasn't specified
+    #
+    def encrypt(plain, options = {})
+      check_version(options) # TODO what does it do?
+
+      plain_data  = Data.new(plain)
+      cipher_data = Data.new(options[:output])
+      keys        = Key.find(:public, options[:recipients])
+
+      flags = 0
+      flags |= GPGME::ENCRYPT_ALWAYS_TRUST if options[:always_trust]
+
+      GPGME::Ctx.new(options) do |ctx|
+        begin
+          if options[:sign]
+            if options[:signers]
+              signers = Key.find(:secret, options[:signers], :sign)
+              ctx.add_signer(*signers)
+            end
+            ctx.encrypt_sign(keys, plain_data, cipher_data, flags)
+          else
+            ctx.encrypt(keys, plain_data, cipher_data, flags)
+          end
+        rescue GPGME::Error::UnusablePublicKey => exc
+          exc.keys = ctx.encrypt_result.invalid_recipients
+          raise exc
+        rescue GPGME::Error::UnusableSecretKey => exc
+          exc.keys = ctx.sign_result.invalid_signers
+          raise exc
+        end
+      end
+
+      cipher_data.seek(0)
+      cipher_data
+    end
+
+    ##
     # Decrypts a previously encrypted element
     #
     #   GPGME.decrypt cipher, options, &block
@@ -301,93 +388,6 @@ module GPGME
       args, options = split_args(args_options)
       args.push(options.merge({:mode => GPGME::SIG_MODE_DETACH}))
       GPGME.sign(plain, *args)
-    end
-
-    ##
-    # Encrypts an element
-    #
-    #  GPGME.encrypt something
-    #
-    # Will return a {GPGME::Data} element which can then be read.
-    #
-    # Must have some key imported, look for {GPGME.import} to know how
-    # to import one, or the gpg documentation to know how to create one
-    #
-    # @param plain
-    #  Must be something that can be converted into a {GPGME::Data} object, or
-    #  a {GPGME::Data} object itself.
-    #
-    # @param [Hash] options
-    #  The optional parameters are as follows:
-    #  * +:recipients+ for which recipient do you want to encrypt this file. It
-    #    will pick the first one available if none specified. Can be an array of
-    #    identifiers or just one (a string).
-    #  * +:always_trust+ if set to true specifies all the recipients to be
-    #    trusted, thus not requiring confirmation.
-    #  * +:sign+ if set to true, performs a combined sign and encrypt operation.
-    #  * +:signers+ if +:sign+ specified to true, a list of additional possible
-    #    signers. Must be an array of sign identifiers.
-    #  * +:output+ if specified, it will write the output into it. It will be
-    #    converted to a {GPGME::Data} object, so it could be a file for example.
-    #
-    # @return [GPGME::Data] a {GPGME::Data} object that can be read.
-    #
-    # @example returns a {GPGME::Data} that can be later encrypted
-    #  encrypted = GPGME.encrypt "Hello world!"
-    #  encrypted.read # => Encrypted stuff
-    #
-    # @example to be decrypted by someone@example.com.
-    #  GPGME.encrypt "Hello", :recipients => "someone@example.com"
-    #
-    # @example If I didn't trust any of my keys by default
-    #  GPGME.encrypt "Hello" # => GPGME::Error::General
-    #  GPGME.encrypt "Hello", :always_trust => true # => Will work fine
-    #
-    # @example encrypted string that can be decrypted and/or *verified*
-    #  GPGME.encrypt "Hello", :sign => true
-    #
-    # @example multiple signers
-    #  GPGME.encrypt "Hello", :sign => true, :signers => "extra@example.com"
-    #
-    # @example writing to a file instead
-    #  file = File.new("signed.sec","wa")
-    #  GPGME.encrypt "Hello", :output => file # output written to signed.sec
-    #
-    # @raise [GPGME::Error::General] when trying to encrypt with a key that is
-    #   not trusted, and +:always_trust+ wasn't specified
-    #
-    def encrypt(plain, options = {})
-      check_version(options) # TODO what does it do?
-
-      plain_data  = Data.new(plain)
-      cipher_data = Data.new(options[:output])
-      keys        = Key.find(:public, options[:recipients])
-
-      flags = 0
-      flags |= GPGME::ENCRYPT_ALWAYS_TRUST if options[:always_trust]
-
-      GPGME::Ctx.new(options) do |ctx|
-        begin
-          if options[:sign]
-            if options[:signers]
-              signers = Key.find(:secret, options[:signers], :sign)
-              ctx.add_signer(*signers)
-            end
-            ctx.encrypt_sign(keys, plain_data, cipher_data, flags)
-          else
-            ctx.encrypt(keys, plain_data, cipher_data, flags)
-          end
-        rescue GPGME::Error::UnusablePublicKey => exc
-          exc.keys = ctx.encrypt_result.invalid_recipients
-          raise exc
-        rescue GPGME::Error::UnusableSecretKey => exc
-          exc.keys = ctx.sign_result.invalid_signers
-          raise exc
-        end
-      end
-
-      cipher_data.seek(0)
-      cipher_data
     end
 
     # Lists all the keys available
