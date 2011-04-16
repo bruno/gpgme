@@ -4,9 +4,6 @@ module GPGME
   module Aux
 
     ##
-    # TODO consider moving somewhere else so that it doesn't appear
-    # in the documentation.
-    #
     # Auxiliary method used by all the library to generate exceptions
     # from error codes returned by the C extension.
     def error_to_exception(err)
@@ -69,20 +66,6 @@ module GPGME
     end
 
     private
-
-    ##
-    # DEPCRECATED ideally use consistent parameters that don't need this kind
-    # of method.
-    def split_args(args_options)
-      if args_options.length > 0 and args_options[-1].respond_to? :to_hash
-        args = args_options[0 ... -1]
-        options = args_options[-1].to_hash
-      else
-        args = args_options
-        options = Hash.new
-      end
-      [args, options]
-    end
 
     ##
     # TODO find out what it does, can't seem to find a proper parameter that
